@@ -4,6 +4,8 @@
 
 A native Linux tool for writing bootable USB drives, built out of pure frustration.
 
+![MUFUS](docs/screenshot.png)
+
 ## Why this exists
 
 This exists because Balena Etcher kept failing to install cleanly on Linux, and Ventoy kept failing to flash a USB drive that actually worked. After enough of that, the answer was to just build a replacement instead of fighting with either one again.
