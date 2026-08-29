@@ -60,7 +60,7 @@ def write_image(image_path: str, device_path: str, progress_cb=None, log_cb=None
         "status=progress",
     ]
     if log_cb:
-        log_cb(f"Escribiendo {image_path} -> {device_path} ({total} bytes)")
+        log_cb(f"Writing {image_path} -> {device_path} ({total} bytes)")
 
     proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
     buf = b""
@@ -83,14 +83,14 @@ def write_image(image_path: str, device_path: str, progress_cb=None, log_cb=None
 
     ret = proc.wait()
     if ret != 0:
-        raise WriterError(f"dd terminó con código {ret} (¿cancelaste la autenticación o el disco falló?)")
+        raise WriterError(f"dd exited with code {ret} (did you cancel the authentication, or did the disk fail?)")
     if progress_cb:
         progress_cb(Progress(total, total))
 
 
 def verify_device(device_path: str, expected_size: int, expected_sha256: str, log_cb=None) -> bool:
     if log_cb:
-        log_cb("Verificando (leyendo de vuelta el dispositivo)...")
+        log_cb("Verifying (reading the device back)...")
     dd = subprocess.Popen(
         ["pkexec", "dd", f"if={device_path}", "bs=4M", "status=none"],
         stdout=subprocess.PIPE,
@@ -107,9 +107,9 @@ def verify_device(device_path: str, expected_size: int, expected_sha256: str, lo
     dd.wait()  # dd exits non-zero on the broken pipe from `head` closing early; expected, ignored.
 
     if not out.strip():
-        raise WriterError("No se pudo leer el dispositivo para verificar.")
+        raise WriterError("Could not read the device to verify it.")
     digest = out.split()[0]
     if log_cb:
-        log_cb(f"sha256 imagen:      {expected_sha256}")
-        log_cb(f"sha256 dispositivo: {digest}")
+        log_cb(f"sha256 image:  {expected_sha256}")
+        log_cb(f"sha256 device: {digest}")
     return digest == expected_sha256

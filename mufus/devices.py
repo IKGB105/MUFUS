@@ -18,7 +18,7 @@ def unmount_all_partitions(device_path: str, log_cb=None) -> None:
             if child.get("mountpoint"):
                 part = f"/dev/{child['name']}"
                 if log_cb:
-                    log_cb(f"Desmontando {part}...")
+                    log_cb(f"Unmounting {part}...")
                 subprocess.run(["udisksctl", "unmount", "-b", part],
                                 capture_output=True, text=True)
 

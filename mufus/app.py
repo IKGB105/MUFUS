@@ -27,7 +27,7 @@ class MainWindow(Adw.ApplicationWindow):
         header.set_title_widget(Adw.WindowTitle.new("MUFUS", "MUFUS is not Rufus"))
 
         about_btn = Gtk.Button(icon_name="help-about-symbolic")
-        about_btn.set_tooltip_text("Acerca de MUFUS")
+        about_btn.set_tooltip_text("About MUFUS")
         about_btn.connect("clicked", self.on_about_clicked)
         header.pack_end(about_btn)
 
@@ -36,12 +36,12 @@ class MainWindow(Adw.ApplicationWindow):
         root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16,
                         margin_top=16, margin_bottom=16, margin_start=16, margin_end=16)
 
-        group = Adw.PreferencesGroup(title="Imagen y dispositivo")
+        group = Adw.PreferencesGroup(title="Image and device")
         root.append(group)
 
         # Image row
-        self.image_row = Adw.ActionRow(title="Imagen ISO/IMG", subtitle="Ninguna seleccionada")
-        browse_btn = Gtk.Button(label="Elegir...")
+        self.image_row = Adw.ActionRow(title="ISO/IMG image", subtitle="None selected")
+        browse_btn = Gtk.Button(label="Choose...")
         browse_btn.set_valign(Gtk.Align.CENTER)
         browse_btn.connect("clicked", self.on_browse_clicked)
         self.image_row.add_suffix(browse_btn)
@@ -49,17 +49,17 @@ class MainWindow(Adw.ApplicationWindow):
 
         # Mode row
         mode_model = Gtk.StringList()
-        mode_model.append("DD Image — clonado directo (ISOs híbridas de Linux)")
-        mode_model.append("ISO Image — extraer y reconstruir (instaladores de Windows, solo UEFI)")
+        mode_model.append("DD Image — direct clone (hybrid Linux ISOs)")
+        mode_model.append("ISO Image — extract and rebuild (Windows installers, UEFI only)")
         self.mode_dropdown = Gtk.DropDown(model=mode_model)
         self.mode_dropdown.set_valign(Gtk.Align.CENTER)
         self.mode_dropdown.connect("notify::selected", self.on_mode_changed)
-        mode_row = Adw.ActionRow(title="Modo")
+        mode_row = Adw.ActionRow(title="Mode")
         mode_row.add_suffix(self.mode_dropdown)
         group.add(mode_row)
 
         # Volume label row (ISO mode only)
-        self.label_row = Adw.EntryRow(title="Etiqueta de volumen (modo ISO)")
+        self.label_row = Adw.EntryRow(title="Volume label (ISO mode)")
         self.label_row.set_text("USB")
         self.label_row.set_visible(False)
         group.add(self.label_row)
@@ -71,19 +71,19 @@ class MainWindow(Adw.ApplicationWindow):
         refresh_btn.set_valign(Gtk.Align.CENTER)
         refresh_btn.connect("clicked", lambda *_: self.refresh_devices())
 
-        device_row = Adw.ActionRow(title="Dispositivo USB")
+        device_row = Adw.ActionRow(title="USB device")
         device_row.add_suffix(self.device_dropdown)
         device_row.add_suffix(refresh_btn)
         group.add(device_row)
 
         # Verify switch
-        self.verify_row = Adw.SwitchRow(title="Verificar después de escribir",
-                                         subtitle="Relee el dispositivo y compara sha256 (recomendado)")
+        self.verify_row = Adw.SwitchRow(title="Verify after writing",
+                                         subtitle="Re-reads the device and compares sha256 (recommended)")
         self.verify_row.set_active(True)
         group.add(self.verify_row)
 
         # Write button
-        self.write_btn = Gtk.Button(label="Escribir")
+        self.write_btn = Gtk.Button(label="Write")
         self.write_btn.add_css_class("suggested-action")
         self.write_btn.add_css_class("pill")
         self.write_btn.set_halign(Gtk.Align.CENTER)
@@ -94,7 +94,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.progress = Gtk.ProgressBar(show_text=True)
         root.append(self.progress)
 
-        self.status_label = Gtk.Label(label="Listo.", xalign=0)
+        self.status_label = Gtk.Label(label="Ready.", xalign=0)
         root.append(self.status_label)
 
         # Log
@@ -121,9 +121,9 @@ class MainWindow(Adw.ApplicationWindow):
         about.set_application_icon("drive-removable-media")
         about.set_developer_name("tostada105")
         about.set_version("0.1")
-        about.set_comments("MUFUS is not Rufus.\n\nCreador de USBs booteables nativo de Linux: "
-                            "clonado directo (modo DD) o extracción/reconstrucción para "
-                            "instaladores de Windows (modo ISO, arranque UEFI).")
+        about.set_comments("MUFUS is not Rufus.\n\nNative Linux bootable USB creator: "
+                            "direct clone (DD mode) or extract/rebuild for "
+                            "Windows installers (ISO mode, UEFI boot).")
         about.set_license_type(Gtk.License.MIT_X11)
         about.present(self)
 
@@ -151,7 +151,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.device_list = devices_mod.list_removable_devices()
         model = Gtk.StringList()
         if not self.device_list:
-            model.append("(no hay dispositivos USB removibles)")
+            model.append("(no removable USB devices found)")
         for d in self.device_list:
             model.append(d.label)
         self.device_dropdown.set_model(model)
@@ -159,11 +159,11 @@ class MainWindow(Adw.ApplicationWindow):
 
     def on_browse_clicked(self, _btn) -> None:
         dialog = Gtk.FileChooserNative.new(
-            "Selecciona una imagen ISO o IMG", self, Gtk.FileChooserAction.OPEN,
-            "Abrir", "Cancelar",
+            "Select an ISO or IMG image", self, Gtk.FileChooserAction.OPEN,
+            "Open", "Cancel",
         )
         filt = Gtk.FileFilter()
-        filt.set_name("Imágenes de disco (*.iso, *.img)")
+        filt.set_name("Disk images (*.iso, *.img)")
         filt.add_pattern("*.iso")
         filt.add_pattern("*.img")
         dialog.add_filter(filt)
@@ -197,17 +197,17 @@ class MainWindow(Adw.ApplicationWindow):
 
     def on_write_clicked(self, _btn) -> None:
         if not self.image_path:
-            self.status_label.set_text("Selecciona primero una imagen ISO/IMG.")
+            self.status_label.set_text("Select an ISO/IMG image first.")
             return
         device = self.selected_device_obj()
         if device is None:
-            self.status_label.set_text("Selecciona un dispositivo USB.")
+            self.status_label.set_text("Select a USB device.")
             return
 
         mode = self.mode_dropdown.get_selected()
         image_size = os.path.getsize(self.image_path)
         if mode == MODE_DD and image_size > device.size_bytes:
-            self.status_label.set_text("La imagen es más grande que el dispositivo seleccionado.")
+            self.status_label.set_text("The image is larger than the selected device.")
             return
 
         self.confirm_and_write(device, image_size, mode)
@@ -215,12 +215,12 @@ class MainWindow(Adw.ApplicationWindow):
     def confirm_and_write(self, device: devices_mod.Device, image_size: int, mode: int) -> None:
         dialog = Adw.MessageDialog.new(
             self,
-            "¿Borrar todo en este dispositivo?",
-            f"Se escribirá:\n{self.image_path}\n\nen:\n{device.label}\n\n"
-            "TODOS los datos en ese dispositivo se perderán permanentemente.",
+            "Erase everything on this device?",
+            f"This will write:\n{self.image_path}\n\nto:\n{device.label}\n\n"
+            "ALL data on that device will be permanently lost.",
         )
-        dialog.add_response("cancel", "Cancelar")
-        dialog.add_response("write", "Escribir")
+        dialog.add_response("cancel", "Cancel")
+        dialog.add_response("write", "Write")
         dialog.set_response_appearance("write", Adw.ResponseAppearance.DESTRUCTIVE)
         dialog.set_default_response("cancel")
         dialog.set_close_response("cancel")
@@ -242,43 +242,43 @@ class MainWindow(Adw.ApplicationWindow):
 
         def worker():
             try:
-                GLib.idle_add(self.status_label.set_text, "Calculando checksum de la imagen...")
+                GLib.idle_add(self.status_label.set_text, "Computing image checksum...")
                 expected_sha = writer.sha256_file(
                     image_path,
-                    progress_cb=lambda p: GLib.idle_add(self.update_progress, p.fraction, "Leyendo imagen"),
+                    progress_cb=lambda p: GLib.idle_add(self.update_progress, p.fraction, "Reading image"),
                 ) if do_verify else None
 
-                GLib.idle_add(self.status_label.set_text, "Desmontando particiones...")
+                GLib.idle_add(self.status_label.set_text, "Unmounting partitions...")
                 writer.unmount_partitions(device, log_cb=lambda m: GLib.idle_add(self.log, m))
 
-                GLib.idle_add(self.status_label.set_text, "Escribiendo...")
+                GLib.idle_add(self.status_label.set_text, "Writing...")
                 writer.write_image(
                     image_path, device.path,
-                    progress_cb=lambda p: GLib.idle_add(self.update_progress, p.fraction, "Escribiendo"),
+                    progress_cb=lambda p: GLib.idle_add(self.update_progress, p.fraction, "Writing"),
                     log_cb=lambda m: GLib.idle_add(self.log, m),
                 )
 
                 if do_verify:
-                    GLib.idle_add(self.status_label.set_text, "Verificando...")
-                    GLib.idle_add(self.update_progress, 1.0, "Verificando (puede tardar)")
+                    GLib.idle_add(self.status_label.set_text, "Verifying...")
+                    GLib.idle_add(self.update_progress, 1.0, "Verifying (this can take a while)")
                     ok = writer.verify_device(
                         device.path, image_size, expected_sha,
                         log_cb=lambda m: GLib.idle_add(self.log, m),
                     )
                     if ok:
-                        GLib.idle_add(self.status_label.set_text, "Listo — verificación OK.")
-                        GLib.idle_add(self.notify_done, "USB creado y verificado correctamente.", False)
+                        GLib.idle_add(self.status_label.set_text, "Done — verification OK.")
+                        GLib.idle_add(self.notify_done, "USB created and verified successfully.", False)
                     else:
-                        msg = "¡ADVERTENCIA! La verificación no coincide. El USB puede estar dañado."
+                        msg = "WARNING! Verification mismatch. The USB may be damaged."
                         GLib.idle_add(self.status_label.set_text, msg)
                         GLib.idle_add(self.notify_done, msg, True)
                 else:
-                    GLib.idle_add(self.status_label.set_text, "Listo.")
-                    GLib.idle_add(self.notify_done, "USB creado correctamente.", False)
+                    GLib.idle_add(self.status_label.set_text, "Done.")
+                    GLib.idle_add(self.notify_done, "USB created successfully.", False)
             except writer.WriterError as e:
                 GLib.idle_add(self.status_label.set_text, f"Error: {e}")
                 GLib.idle_add(self.log, f"ERROR: {e}")
-                GLib.idle_add(self.notify_done, f"Falló la escritura del USB: {e}", True)
+                GLib.idle_add(self.notify_done, f"Failed to write the USB: {e}", True)
             finally:
                 GLib.idle_add(self.set_busy, False)
 
@@ -292,18 +292,18 @@ class MainWindow(Adw.ApplicationWindow):
 
         def worker():
             try:
-                GLib.idle_add(self.status_label.set_text, "Preparando USB (modo ISO)...")
+                GLib.idle_add(self.status_label.set_text, "Preparing USB (ISO mode)...")
                 iso_mode.write_iso_image(
                     image_path, device.path, label,
-                    progress_cb=lambda p: GLib.idle_add(self.update_progress, p.fraction, "Copiando archivos"),
+                    progress_cb=lambda p: GLib.idle_add(self.update_progress, p.fraction, "Copying files"),
                     log_cb=lambda m: GLib.idle_add(self.log, m),
                 )
-                GLib.idle_add(self.status_label.set_text, "Listo — USB de arranque UEFI creado.")
-                GLib.idle_add(self.notify_done, "USB de arranque UEFI creado correctamente.", False)
+                GLib.idle_add(self.status_label.set_text, "Done — UEFI bootable USB created.")
+                GLib.idle_add(self.notify_done, "UEFI bootable USB created successfully.", False)
             except writer.WriterError as e:
                 GLib.idle_add(self.status_label.set_text, f"Error: {e}")
                 GLib.idle_add(self.log, f"ERROR: {e}")
-                GLib.idle_add(self.notify_done, f"Falló la escritura del USB: {e}", True)
+                GLib.idle_add(self.notify_done, f"Failed to write the USB: {e}", True)
             finally:
                 GLib.idle_add(self.set_busy, False)
 
