@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+vm-test/
+*.iso
+*.img
